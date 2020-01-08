@@ -1,0 +1,42 @@
+
+version: '3.1'
+
+services:
+
+  app:
+    image: app
+    restart: unless-stopped
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 80:3000
+    environment:
+      DB: app-db
+      DB_PASS: -
+      EMAIL_PASS: -
+
+  app-db:
+    image: mysql
+    restart: unless-stopped
+    container_name: app-db
+    volumes:
+      - ./sql-scripts:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_DATABASE: app
+      MYSQL_USER: appUser
+      MYSQL_PASSWORD: -
+      MYSQL_ROOT_PASSWORD: -
+    command: --default-authentication-plugin=mysql_native_password
+
+  app-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: app-phpmyadmin
+    links:
+      - app-db
+    environment:
+      PMA_HOST: app-db
+      PMA_PORT: 3306
+    ports:
+      - 81:80
